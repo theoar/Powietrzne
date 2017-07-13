@@ -1,0 +1,449 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>880</width>
+    <height>540</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Konwerter</string>
+  </property>
+  <widget class="QWidget" name="CentralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="2" column="2">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Waga azymutu:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Kąt dopuszczalny</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QCheckBox" name="CheckBoxRegExp">
+      <property name="text">
+       <string>Wyrażenie regularne</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="4">
+     <widget class="QLCDNumber" name="LcdPNumber">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::Flat</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="3">
+     <widget class="QDoubleSpinBox" name="SpinBoxWagaKat">
+      <property name="toolTip">
+       <string>Współczynnik wagi kąta</string>
+      </property>
+      <property name="decimals">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <double>100.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>50.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Waga odległości:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QDoubleSpinBox" name="SpinBoxAzy">
+      <property name="toolTip">
+       <string>Dopuszczalna różnica między A1 policzonym ze współrzednych, a podanym w pliku wejściowym</string>
+      </property>
+      <property name="decimals">
+       <number>3</number>
+      </property>
+      <property name="maximum">
+       <double>360.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>10.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QDoubleSpinBox" name="SpinBoxOdl">
+      <property name="toolTip">
+       <string>Maksymalna wartość odległości, która pozwala na dopasowanie punktów</string>
+      </property>
+      <property name="suffix">
+       <string> m</string>
+      </property>
+      <property name="decimals">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <double>1000.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>400.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QDoubleSpinBox" name="SpinBoxKat">
+      <property name="toolTip">
+       <string>Maksymalna rożnica kątów pomiędzy azymutami dwóch punktów liczona ze zworu: |A1-A2|-180</string>
+      </property>
+      <property name="suffix">
+       <string/>
+      </property>
+      <property name="decimals">
+       <number>3</number>
+      </property>
+      <property name="maximum">
+       <double>360.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>10.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QPushButton" name="ButtonWyczysc">
+      <property name="text">
+       <string>Wyczyść listę przekonwertowanych</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QPushButton" name="ButtonZapisz">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Zapisz do pliku</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Waga kąta:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="4">
+     <widget class="QLCDNumber" name="LcdKNumber">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="digitCount">
+       <number>5</number>
+      </property>
+      <property name="segmentStyle">
+       <enum>QLCDNumber::Flat</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="3">
+     <widget class="QLabel" name="label_8">
+      <property name="text">
+       <string>Liczba skonwertowanych:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Odległość dopuszczalna</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QDoubleSpinBox" name="SpinBoxWagaOdl">
+      <property name="toolTip">
+       <string>Współczynnik wagi odległości dopuszczalnej</string>
+      </property>
+      <property name="decimals">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <double>100.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>15.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_11">
+      <property name="text">
+       <string>Odległośc minimalna</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QPushButton" name="ButtonKonwertuj">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Konwertuj</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="2">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>Format wyjściowy:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Azymut dopuszczalny</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_7">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="text">
+       <string>Kod obiektu:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QDoubleSpinBox" name="SpinBoxWagaAzy">
+      <property name="toolTip">
+       <string>Współczynnik wagi azymutu</string>
+      </property>
+      <property name="decimals">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <double>100.000000000000000</double>
+      </property>
+      <property name="value">
+       <double>50.000000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="3">
+     <widget class="QComboBox" name="ComboBox">
+      <property name="toolTip">
+       <string>Format wyjściowy pliku: dostępne zmienne $x1, $x2, $y1,  $y2</string>
+      </property>
+      <property name="editable">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QPushButton" name="ButtonOtworz">
+      <property name="text">
+       <string>Otwórz plik</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0" colspan="5">
+     <widget class="QTableWidget" name="Table"/>
+    </item>
+    <item row="5" column="1">
+     <widget class="QCheckBox" name="ChecBoxKerg">
+      <property name="text">
+       <string>Łącz różne KERGi</string>
+      </property>
+      <property name="checked">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLineEdit" name="KodEdit">
+      <property name="toolTip">
+       <string>Filtr pozwalający na przetwarzanie obiektów o podanych kodzie obiektu</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="4">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>40</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="8" column="3">
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string>Liczba wczytanych:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QDoubleSpinBox" name="SpinBoxOdlMin">
+      <property name="toolTip">
+       <string>Minimalna odległość między punktami</string>
+      </property>
+      <property name="singleStep">
+       <double>0.250000000000000</double>
+      </property>
+      <property name="value">
+       <double>0.250000000000000</double>
+      </property>
+     </widget>
+    </item>
+    <item row="9" column="0" colspan="5">
+     <widget class="QProgressBar" name="ProgressBar">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="value">
+       <number>24</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+   <zorder>label_2</zorder>
+   <zorder>label</zorder>
+   <zorder>SpinBoxOdl</zorder>
+   <zorder>SpinBoxKat</zorder>
+   <zorder>ButtonOtworz</zorder>
+   <zorder>label_7</zorder>
+   <zorder>KodEdit</zorder>
+   <zorder>label_4</zorder>
+   <zorder>label_3</zorder>
+   <zorder>label_6</zorder>
+   <zorder>SpinBoxAzy</zorder>
+   <zorder>SpinBoxWagaAzy</zorder>
+   <zorder>label_5</zorder>
+   <zorder>ButtonZapisz</zorder>
+   <zorder>ButtonKonwertuj</zorder>
+   <zorder>ButtonWyczysc</zorder>
+   <zorder>label_8</zorder>
+   <zorder>LcdKNumber</zorder>
+   <zorder>label_9</zorder>
+   <zorder>LcdPNumber</zorder>
+   <zorder>ComboBox</zorder>
+   <zorder>label_10</zorder>
+   <zorder>CheckBoxRegExp</zorder>
+   <zorder>ChecBoxKerg</zorder>
+   <zorder>label_11</zorder>
+   <zorder>SpinBoxOdlMin</zorder>
+   <zorder>SpinBoxWagaOdl</zorder>
+   <zorder>SpinBoxWagaKat</zorder>
+   <zorder>horizontalSpacer</zorder>
+   <zorder>Table</zorder>
+   <zorder>ProgressBar</zorder>
+  </widget>
+  <widget class="QMenuBar" name="MenuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>880</width>
+     <height>18</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="StatusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>SpinBoxOdl</tabstop>
+  <tabstop>SpinBoxKat</tabstop>
+  <tabstop>SpinBoxAzy</tabstop>
+  <tabstop>SpinBoxWagaAzy</tabstop>
+  <tabstop>KodEdit</tabstop>
+  <tabstop>ButtonOtworz</tabstop>
+  <tabstop>ButtonKonwertuj</tabstop>
+  <tabstop>ButtonZapisz</tabstop>
+  <tabstop>ButtonWyczysc</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>ButtonOtworz</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onButtonOtworz()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>126</x>
+     <y>471</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>730</x>
+     <y>185</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ButtonKonwertuj</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onButtonKonwertuj()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>458</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>342</x>
+     <y>468</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>ButtonZapisz</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onButtonZapisz()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>433</x>
+     <y>456</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>579</x>
+     <y>459</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onButtonOtworz()</slot>
+  <slot>onButtonKonwertuj()</slot>
+  <slot>onButtonZapisz()</slot>
+ </slots>
+</ui>
