@@ -26,12 +26,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    dopasowanie.cpp
+    dopasowanie.cpp \
+    worker.cpp
 
 HEADERS += \
         mainwindow.hpp \
     dopasowanie.hpp \
-    point.hpp
+    point.hpp \
+    worker.hpp
 
 FORMS += \
         mainwindow.ui

@@ -7,14 +7,11 @@ const QString Dopasowanie::AZYMUT = "AZYMUT";
 
 Dopasowanie::Dopasowanie()
 {
-	A = nullptr;
-	B = nullptr;	
+
 }
 
-double Dopasowanie::ObliczDopasowanie(Point* P1, Point* P2)
+double Dopasowanie::ObliczDopasowanie(Point P1, Point P2)
 {
-	if(P1==nullptr || P2==nullptr)
-		return -1;
 
 	A=P1;
 	B=P2;
@@ -54,10 +51,7 @@ double Dopasowanie::ObliczDopasowanie(Point* P1, Point* P2)
 	{
         SumaWag+=Params[X].Waga;
         SumaWartosci+=Params[X].Waga*Params[X].Wartosc;
-	}
-
-	A=nullptr;
-	B=nullptr;
+	}	
 
     if(SumaWag==0)
         return -1;
@@ -96,18 +90,18 @@ QStringList Dopasowanie::getParamNames() const
 
 double Dopasowanie::pointDistance()
 {
-    return sqrt(pow(A->X-B->X,2)+pow(A->Y-B->Y,2));
+    return sqrt(pow(A.X-B.X,2)+pow(A.Y-B.Y,2));
 }
 
 double Dopasowanie::pointKatDifference()
 {
-	return qFabs(qFabs(A->Kat-B->Kat)-180);
+    return qFabs(qFabs(A.Kat-B.Kat)-180);
 }
 
 double Dopasowanie::pointAzymutDifference()
 {
-	double DeltaX = B->X-A->X;
-	double DeltaY = B->Y-A->Y;
+    double DeltaX = B.X-A.X;
+    double DeltaY = B.Y-A.Y;
 	double Azymut = 0;
 
 	double temp = DeltaX/DeltaY;
@@ -123,6 +117,6 @@ double Dopasowanie::pointAzymutDifference()
 	if(DeltaY>0 && DeltaX>0)
 		Azymut = 360-KatAB;
 
-	return qFabs(Azymut-A->Kat);
+    return qFabs(Azymut-A.Kat);
 }
 

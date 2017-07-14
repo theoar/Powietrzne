@@ -14,8 +14,8 @@ class Dopasowanie
 	private:
 		QVector<double> Wagi;
 		QVector<double> Maksyma;
-		Point *A;
-		Point *B;		
+        Point A;
+        Point B;
 
         struct Param{
             double Waga;
@@ -38,7 +38,7 @@ class Dopasowanie
 		double pointAzymutDifference();
 	public:
 		Dopasowanie();
-		double ObliczDopasowanie(Point *P1, Point *P2);	
+        double ObliczDopasowanie(Point P1, Point P2);
 
         void setParamsValues(QString ParamName, char Ograniczenie, double Waga, double Value);
 
