@@ -10,12 +10,10 @@
 #include <QDebug>
 #include <QtMath>
 #include <QRegExp>
-#include <math.h>
 #include <QMessageBox>
 #include <QStringList>
-#include <QPixmap>
-#include <QGraphicsView>
 #include <QThread>
+#include <QTableWidget>
 
 #include "point.hpp"
 #include "dopasowanie.hpp"
@@ -34,33 +32,48 @@ public:
     ~MainWindow();
 
 signals:
-    void requestComputing(const QVector<Point*> & Points, Dopasowanie Dop, bool RegExpEnable, bool DifferentKerg, QString Filter );
+    void requestComputing(const QVector<Point> Points, Dopasowanie Dop, bool RegExpEnable, bool DifferentKerg, QString Filter );
+    void requestOpening(QString Path);
+    void requestAppendToList(const QVector<Point> Points, QTableWidget *Table);
+    void requestSaving(const QVector<QPair<Point, Point>> Points, QString Path, QString Pattern);
 
 public slots:
     void onButtonOtworz();
     void onButtonKonwertuj();
     void onButtonZapisz();
+
     void onJobDone(QVector<QPair<Point, Point>> OutputList, int TeoretycznieMozliwe);
+    void onJobCancelled();
+
+    void onPointsLoaded(QVector<Point> P);
+    void onPointsLodingFailed(QString Path);
+
+    void onPointsSaved();
+    void onPointsSavingFailed(QString Path);
+
+    void enableGui();
+    void distableGui();
+
+    void appendToView();
 
 private:
     Ui::MainWindow *ui;
-    QVector<Point*> Points;
-    QVector<QPair<Point*, Point*>> ListaWyjsciowa;
+    QVector<Point> Points;
+    QVector<QPair<Point, Point>> ListaWyjsciowa;
     QThread Thread;
     Worker *Mudzin;
 
-    double pointDistance(Point* A, Point *B);
-    double pointKatDifference(Point* A, Point* B);
+    double pointDistance(const Point A, const Point B);
+    double pointKatDifference(const Point A, const Point B);
     double pointDopasowanie(double Odl, double Kat, double Wd, double Wk, double Azy, double Wa);
-    double pointAzymutDifference(Point* A, Point* B);
+    double pointAzymutDifference(const Point A, const Point B);
     double sredniaWazona(QList<QPair<double, double>> Elementy); //Para: wartość, waga
 
     void clearPoints();
 
     void aktualizujStanPrzyciskow();
     void aktualizujLiczniki();
-    void fillComobBox();
-    void insertItem(Point* Item);
+    void fillComobBox();    
     void initTable();
     void distableButtons();
     void enableButtions();

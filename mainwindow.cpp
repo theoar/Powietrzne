@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->ProgressBar->hide();
     ui->SpinBoxAzy->setSuffix(QString(QChar(' ')) + QString(QChar(0x030A)));
     ui->SpinBoxKat->setSuffix(QString(QChar(' ')) + QString(QChar(0x030A)));
+    ui->ButtonCancel->hide();
 
     connect(ui->ButtonWyczysc, &QPushButton::clicked, this, [this](void)->void {
         if(this->ListaWyjsciowa.isEmpty())                {
@@ -26,17 +27,56 @@ MainWindow::MainWindow(QWidget *parent) :
 
     fillComobBox();
     initTable();
+    aktualizujLiczniki();
+    aktualizujStanPrzyciskow();
 
     Mudzin = new Worker();
     Mudzin->moveToThread(&Thread);
     Thread.start();
 
+    connect(this, &MainWindow::requestOpening, Mudzin, &Worker::startOpening);
     connect(this, &MainWindow::requestComputing, Mudzin, &Worker::startComputing);
-    connect(Mudzin, &Worker::setProgressRange, ui->ProgressBar, &QProgressBar::setRange );
-    connect(Mudzin, &Worker::setProgress, ui->ProgressBar, &QProgressBar::setValue);
+    connect(this, &MainWindow::requestSaving, Mudzin, &Worker::startSaving);
+
+    connect(this, &MainWindow::requestOpening, this, &MainWindow::distableGui);
+    connect(this, &MainWindow::requestComputing, this, &MainWindow::distableGui);
+    connect(this, &MainWindow::requestSaving, this, &MainWindow::distableGui);
+
+    connect(Mudzin, &Worker::jobDone, this, &MainWindow::enableGui);
+    connect(Mudzin, &Worker::pointsLoaded, this, &MainWindow::enableGui);
+    connect(Mudzin, &Worker::pointsLoadingFailed, this, &MainWindow::enableGui);
+    connect(Mudzin, &Worker::pointsSaved, this, &MainWindow::enableGui);
+    connect(Mudzin, &Worker::pointsSavingFailed, this, &MainWindow::enableGui);
+    connect(Mudzin, &Worker::pointsAddedToView, this, &MainWindow::enableGui);
+    connect(Mudzin, &Worker::cancelled, this, &MainWindow::enableGui);
+
     connect(Mudzin, &Worker::jobDone, this, &MainWindow::onJobDone);
+    connect(Mudzin, &Worker::pointsLoaded, this, &MainWindow::onPointsLoaded);
+    connect(Mudzin, &Worker::pointsSaved, this, &MainWindow::onPointsSaved);
+    connect(Mudzin, &Worker::pointsLoadingFailed, this, &MainWindow::onPointsLodingFailed);
+    connect(Mudzin, &Worker::cancelled, this, &MainWindow::onJobCancelled);
+
+    connect(Mudzin, &Worker::setProgressRange, ui->ProgressBar, &QProgressBar::setRange );
+    connect(Mudzin, &Worker::setProgress, ui->ProgressBar, &QProgressBar::setValue );
+
     connect(this, &MainWindow::requestComputing, ui->ProgressBar, &QProgressBar::show);
-    connect(Mudzin, &Worker::jobDone, ui->ProgressBar, &QProgressBar::hide);
+    connect(this, &MainWindow::requestOpening, ui->ProgressBar, &QProgressBar::show);
+    connect(this, &MainWindow::requestAppendToList, ui->ProgressBar, &QProgressBar::show);
+    connect(this, &MainWindow::requestSaving, ui->ProgressBar, &QProgressBar::show);
+
+    connect(Mudzin, &Worker::jobDone, ui->ProgressBar, &QProgressBar::hide);    
+    connect(Mudzin, &Worker::pointsLoaded, ui->ProgressBar, &QProgressBar::hide);
+    connect(Mudzin, &Worker::pointsSaved, ui->ProgressBar, &QProgressBar::hide);
+    connect(Mudzin, &Worker::pointsLoadingFailed, ui->ProgressBar, &QProgressBar::hide);
+    connect(Mudzin, &Worker::pointsSavingFailed, ui->ProgressBar, &QProgressBar::hide);
+    connect(Mudzin, &Worker::cancelled, ui->ProgressBar, &QProgressBar::hide);
+
+    connect(this, &MainWindow::requestComputing, ui->ButtonCancel, &QPushButton::show);
+    connect(Mudzin, &Worker::jobDone, ui->ButtonCancel, &QPushButton::hide);
+
+    connect(ui->ButtonCancel, &QPushButton::clicked, [this](void) -> void {
+       Mudzin->cancelCopmuting();
+    });
 
 }
 
@@ -58,92 +98,14 @@ void MainWindow::onButtonOtworz()
     if(FilePath.isNull() || FilePath.isEmpty())
         return;
 
-    QFile File(FilePath);
-    if(!File.open(QFile::ReadOnly))
-    {
-        statusBar()->showMessage(QString("Nie mozna wczytac pliku: $1").arg(FilePath));
-        QMessageBox::information(this, "Błąd", QString("Nie można otworzyć pliku: $1").arg(FilePath));
-        return;
-    }
-    ui->ProgressBar->show();
-    ui->ProgressBar->setRange(0, File.size());
     statusBar()->showMessage(QString("Wczytuje plik: ").append(FilePath));
+    this->setWindowTitle(FilePath);
 
-    clearPoints();
-    ListaWyjsciowa.clear();
-
-    qint64 Bytes = 0;
-    QTextStream Stream(&File);
-    Stream.setRealNumberPrecision(20);
-
-    qDebug() << File.size();
-
-    while(!Stream.atEnd())
-    {
-        QString Line = Stream.readLine();
-        QString Temp;
-
-        QTextStream LineStream(&Line);
-        QStringList Lista = Line.split(' ', QString::SkipEmptyParts);
-
-        ui->ProgressBar->setValue(Bytes+=Line.toLocal8Bit().size());
-
-        if(Lista.length()<8)
-            continue;
-
-        Point * NewPoint = new Point();
-
-        LineStream >> Temp;
-        LineStream >> NewPoint->X;
-        LineStream >> NewPoint->Y;
-        LineStream >> NewPoint->Wys;
-        LineStream >> NewPoint->Kat;
-        LineStream >> NewPoint->Flaga;
-
-        LineStream >> NewPoint->Kod;
-        LineStream >> NewPoint->Kerg;
-
-        if( !NewPoint->Kod.contains('"') || NewPoint->Kod.contains(QRegExp("\"(?:\\d+\\.?\\d*)?\\|?(?:\\d+\\.?\\d*)\"")) )
-            NewPoint->Kod = "BRAK";
-
-        NewPoint->Kerg = '_';
-
-        Points.push_back(NewPoint);
-
-    }
-
-    this->setWindowTitle(File.fileName());
-    File.close();
-
-    statusBar()->showMessage(QString("Liczba wczytanych: %1 z pliku %2").arg(QString::number(Points.length())).arg(FilePath));
-    if(Points.length() < 1)
-    {
-        statusBar()->showMessage(QString("Wczytano za mało punków, minimalna liczba punktów: 2"));
-        clearPoints();
-
-    }
-    else
-    {
-
-        statusBar()->showMessage(QString("Wczytywanie danych do tabeli"));
-
-        Bytes = 0;
-        ui->ProgressBar->setRange(0, Points.length());
-        for(Point * P : Points)
-        {
-            insertItem(P);
-            ui->ProgressBar->setValue(Bytes+=1);
-        }
-    }
-
-    aktualizujStanPrzyciskow();
-    aktualizujLiczniki();
-
-    ui->ProgressBar->hide();
+    emit requestOpening(FilePath);
 }
 
 void MainWindow::onButtonKonwertuj()
-{
+{    
     statusBar()->showMessage( "Konwersja w toku..." );
 
     Dopasowanie Fitter;
@@ -152,25 +114,9 @@ void MainWindow::onButtonKonwertuj()
     Fitter.setParamsValues(Dopasowanie::MAXD, '<', ui->SpinBoxWagaOdl->value(),ui->SpinBoxOdl->value());
     Fitter.setParamsValues(Dopasowanie::MIND, '>', 0, ui->SpinBoxOdlMin->value());
 
-
     emit requestComputing(Points, Fitter, ui->CheckBoxRegExp->isChecked(), ui->ChecBoxKerg->isChecked(), ui->KodEdit->text() );
-
-    ui->CentralWidget->setEnabled(false);
 }
 
-void MainWindow::insertItem(Point *Item)
-{
-    int row = ui->Table->rowCount();
-    ui->Table->insertRow(row);
-
-    ui->Table->setItem(row, 0, new QTableWidgetItem( QString::number(Item->X)  ));
-    ui->Table->setItem(row, 1, new QTableWidgetItem( QString::number(Item->Y) ));
-    ui->Table->setItem(row, 2, new QTableWidgetItem( QString::number(Item->Wys) ));
-    ui->Table->setItem(row, 3, new QTableWidgetItem( QString::number(Item->Kat) ));
-    ui->Table->setItem(row, 4, new QTableWidgetItem( QString::number(Item->Flaga) ));
-    ui->Table->setItem(row, 5, new QTableWidgetItem( Item->Kod.remove('"')));
-    ui->Table->setItem(row, 6, new QTableWidgetItem( Item->Kerg ));
-}
 
 void MainWindow::initTable()
 {
@@ -181,90 +127,143 @@ void MainWindow::initTable()
 
 void MainWindow::distableButtons()
 {
-    ui->CentralWidget->setEnabled(false);
+    ui->ButtonKonwertuj->setDisabled(true);
+    ui->ButtonOtworz->setDisabled(true);
+    ui->ButtonWyczysc->setDisabled(true);
+    ui->ButtonZapisz->setDisabled(true);
 }
 
 void MainWindow::enableButtions()
-{
-    ui->CentralWidget->setEnabled(true);
+{   
+    ui->ButtonOtworz->setEnabled(true);
+    aktualizujStanPrzyciskow();
 }
 
 void MainWindow::onButtonZapisz()
 {
     QString FilePath = QFileDialog::getSaveFileName(this, "Wybierz plik do zapisu");
-    QFile File(FilePath);
-
-    QString Pattern = ui->ComboBox->currentText();
-    Pattern.remove(QRegExp(("&.*&")));
-
-    if(File.open(QFile::WriteOnly))
-    {
-        QTextStream Stream(&File);
-        Stream.setRealNumberPrecision(20);
-
-        ui->ProgressBar->show();
-        ui->ProgressBar->setRange(0, ListaWyjsciowa.length());
-
-        for(const QPair<Point*, Point*> & P : ListaWyjsciowa)
-        {
-            QString Line = Pattern;
-
-            Line.replace("$X1", QString::number(P.first->X, 'E', 20));
-            Line.replace("$Y1", QString::number(P.first->Y, 'E', 20));
-            Line.replace("$X2", QString::number(P.second->X, 'E', 20));
-            Line.replace("$Y2", QString::number(P.second->Y, 'E', 20));
-            Line.replace("$KERG", P.first->Kerg);
-
-            Stream << Line << "\r\n";
-
-            ui->ProgressBar->setValue( ui->ProgressBar->value()+1 );
-        }
-    }
-
-    else
-    {
-        statusBar()->showMessage(QString("Nie można otworzyć pliku: %1 do zapisu").arg(FilePath));
-        QMessageBox::information(this, QString("Błąd"), QString("Nie można otworzyć pliku: %1 do zapisu").arg(FilePath));
+    if(FilePath.isNull() || FilePath.isEmpty())
         return;
-    }
-    File.close();
 
-    ListaWyjsciowa.clear();
-    aktualizujStanPrzyciskow();
-    aktualizujLiczniki();
-
-    ui->ProgressBar->hide();
-    statusBar()->showMessage(QString("Zapisano plik %1").arg(FilePath));
-    this->setWindowTitle("Konwerter");
+    emit requestSaving(ListaWyjsciowa, FilePath, ui->ComboBox->currentText());
 }
 
 void MainWindow::onJobDone(QVector<QPair<Point, Point>> OutputList, int TeoretycznieMozliwe)
-{
-    ui->CentralWidget->setEnabled(true);
+{   
     ui->ProgressBar->hide();
     statusBar()->showMessage(QString("Liczba utworzonych par: %1 na %2 teoretycznie możliwych").arg(
                                  QString::number(OutputList.length())).arg(
                                  QString::number(TeoretycznieMozliwe/2))
                              );
 
+    if(ListaWyjsciowa.length() > 0 && QMessageBox::question(this, "Czyszczenie", "Usunąć punkty z poprzedniej konwersji?")==QMessageBox::Yes)
+        ListaWyjsciowa=OutputList;
+    else
+        ListaWyjsciowa.append(OutputList);
+
+    aktualizujStanPrzyciskow();
+    aktualizujLiczniki();
+}
+
+void MainWindow::onJobCancelled()
+{
+    ui->StatusBar->showMessage("Anulowano przetwarzanie");
+    ui->ButtonCancel->hide();
+
     aktualizujStanPrzyciskow();
     aktualizujLiczniki();
 }
 
 
-void MainWindow::clearPoints()
+void MainWindow::onPointsLoaded(QVector<Point> P)
 {
-    for(Point * P : Points)
-        delete P;
-    Points.clear();
+    statusBar()->showMessage(QString("Liczba wczytanych: %1").arg(QString::number(Points.length())));
+    if(P.length() < 1)
+    {
+        statusBar()->showMessage(QString("Wczytano za mało punków, minimalna liczba punktów: 2"));
+        clearPoints();
+    }
+    else
+    {
+        ui->Table->setRowCount(0);
+        statusBar()->showMessage(QString("Wczytywanie danych do tabeli"));
+        Points = P;
+        appendToView();
+        statusBar()->showMessage(QString("Załadowane punkty: %1").arg(QString::number(Points.length())));
+    }
 
+    aktualizujStanPrzyciskow();
+    aktualizujLiczniki();
+
+}
+
+void MainWindow::onPointsLodingFailed(QString Path)
+{
+    statusBar()->showMessage(QString("Nie mozna wczytac pliku: $1").arg(Path));
+    QMessageBox::information(this, "Błąd", QString("Nie można otworzyć pliku: $1").arg(Path));
+}
+
+
+void MainWindow::onPointsSaved()
+{
+    ListaWyjsciowa.clear();
+
+    aktualizujStanPrzyciskow();
+    aktualizujLiczniki();
+
+    statusBar()->showMessage(QString("Zapisano plik"));
+    this->setWindowTitle("Konwerter");
+}
+
+void MainWindow::onPointsSavingFailed(QString Path)
+{
+    aktualizujStanPrzyciskow();
+    aktualizujLiczniki();
+
+    ui->StatusBar->showMessage( QString("Nie można zapisać pliku: %1").arg(Path) );
+    this->setWindowTitle("Konwerter");
+}
+
+void MainWindow::enableGui()
+{
+    enableButtions();
+}
+
+void MainWindow::distableGui()
+{
+    distableButtons();
+}
+
+void MainWindow::appendToView()
+{
+    auto Table = ui->Table;
+    Table->setRowCount(0);
+    for(const Point & Item : Points)
+    {
+        int row = Table->rowCount();
+        Table->insertRow(row);
+
+        Table->setItem(row, 0, new QTableWidgetItem( QString::number(Item.X)  ));
+        Table->setItem(row, 1, new QTableWidgetItem( QString::number(Item.Y) ));
+        Table->setItem(row, 2, new QTableWidgetItem( QString::number(Item.Wys) ));
+        Table->setItem(row, 3, new QTableWidgetItem( QString::number(Item.Kat) ));
+        Table->setItem(row, 4, new QTableWidgetItem( QString::number(Item.Flaga) ));
+        Table->setItem(row, 5, new QTableWidgetItem( QString(Item.Kod).remove('"')));
+        Table->setItem(row, 6, new QTableWidgetItem( Item.Kerg ));
+    }
+}
+
+void MainWindow::clearPoints()
+{    
+    Points.clear();
     ui->Table->setRowCount(0);
 }
 
 void MainWindow::aktualizujStanPrzyciskow()
 {
-    ui->ButtonKonwertuj->setEnabled(Points.length()>1);
+    ui->ButtonKonwertuj->setEnabled(Points.length());
     ui->ButtonZapisz->setEnabled(ListaWyjsciowa.length());
+    ui->ButtonWyczysc->setEnabled(ListaWyjsciowa.length());
 }
 
 void MainWindow::aktualizujLiczniki()

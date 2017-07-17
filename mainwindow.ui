@@ -268,7 +268,11 @@
      </widget>
     </item>
     <item row="6" column="0" colspan="5">
-     <widget class="QTableWidget" name="Table"/>
+     <widget class="QTableWidget" name="Table">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+     </widget>
     </item>
     <item row="5" column="1">
      <widget class="QCheckBox" name="ChecBoxKerg">
@@ -333,6 +337,16 @@
       </property>
      </widget>
     </item>
+    <item row="7" column="2">
+     <widget class="QPushButton" name="ButtonCancel">
+      <property name="text">
+       <string>Anuluj</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
    <zorder>label_2</zorder>
    <zorder>label</zorder>
@@ -365,6 +379,7 @@
    <zorder>horizontalSpacer</zorder>
    <zorder>Table</zorder>
    <zorder>ProgressBar</zorder>
+   <zorder>ButtonCancel</zorder>
   </widget>
   <widget class="QMenuBar" name="MenuBar">
    <property name="geometry">
